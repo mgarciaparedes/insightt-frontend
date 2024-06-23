@@ -1,13 +1,18 @@
 import React from "react";
-import { TextField, Button, Grid, Container } from "@mui/material";
+import { TextField, Button, Grid, Container, Divider } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-const Actions = () => {
+interface Props {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Actions = ({ open, setOpen }: Props) => {
   return (
     <>
       <Container maxWidth="xl">
         <Grid container spacing={2} sx={{ mt: 4 }} alignItems="center">
-          <Grid item xs={10}>
+          <Grid item xs={12} sm={6} md={8} lg={10}>
             <TextField
               variant="outlined"
               label="Search"
@@ -15,17 +20,20 @@ const Actions = () => {
               // Aquí puedes agregar más props según tus necesidades
             />
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={12} sm={6} md={4} lg={2}>
             <Button
               variant="contained"
               color="primary"
               size="large"
               startIcon={<AddIcon />}
               fullWidth
-              // Aquí puedes agregar más props según tus necesidades
+              onClick={() => setOpen(true)}
             >
               Add new task
             </Button>
+          </Grid>
+          <Grid item mt={3} mb={1} xs={12}>
+            <Divider />
           </Grid>
         </Grid>
       </Container>
