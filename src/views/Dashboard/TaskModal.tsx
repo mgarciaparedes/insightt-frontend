@@ -91,7 +91,6 @@ const TaskModal = ({
   });
 
   useEffect(() => {
-    console.log("cambió", modalFunction);
     if (modalFunction === "Edit") {
       formik.setFieldValue("name", selection.name);
       formik.setFieldValue("points", selection.points);
@@ -106,7 +105,6 @@ const TaskModal = ({
       .post("/saveNewTask", values)
       .then((response: any) => {
         const { message, taskList } = response.data;
-        console.log(response.data);
         if (message === "Task created successfully") {
           setTasks(taskList);
           setSnackbarMessage(message);
@@ -133,7 +131,6 @@ const TaskModal = ({
       .post("/updateTask", payload)
       .then((response: any) => {
         const { message, taskList } = response.data;
-        console.log(response.data);
         if (message === "Task updated successfully") {
           setTasks(taskList);
           setSnackbarMessage(message);

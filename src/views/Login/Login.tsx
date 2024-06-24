@@ -1,12 +1,24 @@
 import * as React from "react";
-import { Card, Avatar, Button, TextField } from "@mui/material";
+import { useState } from "react";
+import {
+  Card,
+  Avatar,
+  Button,
+  TextField,
+  LinearProgress,
+  Snackbar,
+  IconButton,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { CardContent } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
 import * as yup from "yup";
+import axios from "axios";
+import CloseIcon from "@mui/icons-material/Close";
 
 const validationSchema = yup.object({
   email: yup
@@ -15,20 +27,65 @@ const validationSchema = yup.object({
     .required("Email is required"),
   password: yup
     .string()
-    .min(8, "Password should be of minimum 8 characters length")
+    .min(6, "Password should be of minimum 6 characters length")
     .required("Password is required"),
 });
 
 const Login = () => {
   const navigate = useNavigate();
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-    navigate("/dashboard");
+  const [loading, setLoading] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const action = (
+    <React.Fragment>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={() => handleClose()}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
+  const handleClose = () => {
+    setShowSnackbar(false);
+  };
+
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      login(values);
+    },
+  });
+
+  const login = (values: any) => {
+    setLoading(true);
+    axios
+      .post("/login", values)
+      .then((response) => {
+        console.log;
+        const { message } = response.data;
+        if (message === "Login successfull") {
+          setTimeout(() => {
+            setLoading(false);
+            navigate("/dashboard");
+          }, 1000);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        const { message } = error.response.data;
+        setLoading(false);
+        setSnackbarMessage(message);
+        setShowSnackbar(true);
+      });
   };
 
   return (
@@ -55,44 +112,57 @@ const Login = () => {
                 Sign in
               </Typography>
             </Box>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              noValidate
-              sx={{ mt: 1 }}
-            >
+            <form onSubmit={formik.handleSubmit}>
               <TextField
-                margin="normal"
-                required
+                sx={{ mt: 2 }}
                 fullWidth
                 id="email"
-                label="Email Address"
                 name="email"
-                autoComplete="email"
-                autoFocus
+                label="Email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
               />
               <TextField
-                margin="normal"
-                required
+                sx={{ mt: 2 }}
                 fullWidth
+                id="password"
                 name="password"
                 label="Password"
                 type="password"
-                id="password"
-                autoComplete="current-password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.password && Boolean(formik.errors.password)
+                }
+                helperText={formik.touched.password && formik.errors.password}
               />
+              {loading ? <LinearProgress sx={{ mt: 2 }} /> : <></>}
+
               <Button
-                type="submit"
-                fullWidth
+                sx={{ mt: 2 }}
+                color="primary"
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+                fullWidth
+                type="submit"
+                disabled={loading}
               >
-                Sign In
+                Submit
               </Button>
-            </Box>
+            </form>
           </CardContent>
         </Card>
       </Box>
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        message={snackbarMessage}
+        action={action}
+        onClose={() => setShowSnackbar(false)}
+      />
     </Container>
   );
 };
