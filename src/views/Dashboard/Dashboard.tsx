@@ -33,8 +33,13 @@ const Dashboard = () => {
     <>
       <Navbar />
       <Actions open={openTaskModal} setOpen={setOpenTaskModal} />
-      <TaskList tasks={data} loading={loading} />
-      <TaskModal open={openTaskModal} setOpen={setOpenTaskModal} />
+      <TaskList tasks={data} setTasks={setData} loading={loading} />
+      <TaskModal
+        open={openTaskModal}
+        setOpen={setOpenTaskModal}
+        tasks={data}
+        setTasks={setData}
+      />
     </>
   );
 };

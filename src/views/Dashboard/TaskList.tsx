@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import * as React from "react";
+import { useState } from "react";
 import { styled } from "@mui/material/styles";
 import {
   Container,
@@ -15,14 +16,16 @@ import {
   CardContent,
   Chip,
   Skeleton,
-  Button,
   IconButton,
   Alert,
   Box,
+  Snackbar,
 } from "@mui/material";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CancelIcon from "@mui/icons-material/Cancel";
+import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
+import axios from "axios";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -47,6 +50,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 interface Props {
   tasks: any;
+  setTasks: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
 }
 
@@ -54,7 +58,6 @@ interface Props {
 interface Task {
   _id: string;
   name: string;
-  createdBy: string;
   points: string;
   status: string;
   description: string;
@@ -65,7 +68,6 @@ interface Task {
 const initialTask: Task = {
   _id: "",
   name: "",
-  createdBy: "",
   points: "",
   status: "",
   description: "",
@@ -73,8 +75,43 @@ const initialTask: Task = {
   __v: 0,
 };
 
-const TaskList = ({ tasks, loading }: Props) => {
+const TaskList = ({ tasks, setTasks, loading }: Props) => {
   const [selection, setSelection] = useState<Task>(initialTask);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleClose = () => {
+    setShowSnackbar(false);
+  };
+
+  const action = (
+    <React.Fragment>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={() => handleClose()}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
+  const deleteTask = (id: string) => {
+    const payload = { id };
+    axios
+      .post("/deleteTask", payload)
+      .then((response) => {
+        const { message, taskList } = response.data;
+        if (message === "Task successfully deleted") {
+          setSnackbarMessage(message);
+          setShowSnackbar(true);
+          setTasks(taskList);
+        }
+      })
+      .catch((error) => {});
+  };
+
   return (
     <>
       <Container maxWidth="xl" sx={{ mt: 3 }}>
@@ -110,7 +147,6 @@ const TaskList = ({ tasks, loading }: Props) => {
                           }}
                           onClick={() => {
                             setSelection(row);
-                            console.log(row);
                           }}
                         >
                           <StyledTableCell component="th" scope="row">
@@ -143,7 +179,13 @@ const TaskList = ({ tasks, loading }: Props) => {
                             <IconButton aria-label="update" size="small">
                               <EditIcon sx={{ width: "15px" }} />
                             </IconButton>
-                            <IconButton aria-label="delete" size="small">
+                            <IconButton
+                              aria-label="delete"
+                              size="small"
+                              onClick={() => {
+                                deleteTask(row._id);
+                              }}
+                            >
                               <CancelIcon sx={{ width: "15px" }} />
                             </IconButton>
                           </StyledTableCell>
@@ -176,13 +218,6 @@ const TaskList = ({ tasks, loading }: Props) => {
                     >
                       {selection.name}
                     </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      sx={{ fontSize: "10px" }}
-                    >
-                      Created by <b>user</b>
-                    </Typography>
                     <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
                       Task Points: {selection.points}
                     </Typography>
@@ -214,19 +249,18 @@ const TaskList = ({ tasks, loading }: Props) => {
                       }}
                     >
                       <Typography variant="body2">
-                        <b>Description:</b>&nbsp; "{selection.description}"
+                        <b>Description:</b>&nbsp; {selection.description}
                       </Typography>
-
-                      {selection.notes === "" ? (
-                        <Alert severity="info" sx={{ mt: 3 }}>
-                          "No notes for this task."
-                        </Alert>
-                      ) : (
-                        <Alert severity="warning" sx={{ mt: 3 }}>
-                          <b>Notes:</b> {selection.notes}
-                        </Alert>
-                      )}
                     </Box>
+                    {selection.notes === "" ? (
+                      <Typography variant="subtitle2" sx={{ mt: 3 }}>
+                        No notes for this task!
+                      </Typography>
+                    ) : (
+                      <Alert severity="warning" sx={{ mt: 3 }}>
+                        <b>Notes:</b> {selection.notes}
+                      </Alert>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -234,6 +268,13 @@ const TaskList = ({ tasks, loading }: Props) => {
           </Grid>
         )}
       </Container>
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        message={snackbarMessage}
+        action={action}
+        onClose={() => setShowSnackbar(false)}
+      />
     </>
   );
 };
