@@ -13,12 +13,12 @@ const Actions = ({ setOpen, setModalFunction }: Props) => {
       <Container maxWidth="xl">
         <Grid container spacing={2} sx={{ mt: 4 }} alignItems="center">
           <Grid item xs={12} sm={6} md={8} lg={10}>
-            <TextField
+            {/* <TextField
               variant="outlined"
               label="Search"
               fullWidth
               // Aquí puedes agregar más props según tus necesidades
-            />
+            /> */}
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2}>
             <Button

@@ -71,7 +71,8 @@ const Login = () => {
       .post("/login", values)
       .then((response) => {
         console.log;
-        const { message } = response.data;
+        const { message, token } = response.data;
+        axios.defaults.headers.common["x-token"] = token;
         if (message === "Login successfull") {
           setTimeout(() => {
             setLoading(false);

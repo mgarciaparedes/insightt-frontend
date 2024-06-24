@@ -26,6 +26,17 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
+import { Task } from "../../interface/Task";
+
+const initialTask: Task = {
+  _id: "",
+  name: "",
+  points: "",
+  status: "",
+  description: "",
+  notes: "",
+  __v: 0,
+};
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -107,6 +118,7 @@ const TaskList = ({
           setSnackbarMessage(message);
           setShowSnackbar(true);
           setTasks(taskList);
+          setSelection(initialTask);
         }
       })
       .catch(() => {
