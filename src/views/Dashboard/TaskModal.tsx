@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,7 +8,7 @@ import {
   TextField,
   Container,
   Snackbar,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -43,12 +43,20 @@ interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: any;
   setTasks: React.Dispatch<React.SetStateAction<any>>;
+  modalFunction: string;
+  selection: any;
 }
 
-const TaskModal = ({ open, setOpen, tasks, setTasks }: Props) => {
+const TaskModal = ({
+  open,
+  setOpen,
+  tasks,
+  setTasks,
+  modalFunction,
+  selection,
+}: Props) => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-
   const statusOptions = ["To Do", "In Progress", "Done"];
 
   const action = (
@@ -74,9 +82,24 @@ const TaskModal = ({ open, setOpen, tasks, setTasks }: Props) => {
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      saveNewTask(values);
+      if (modalFunction === "Add") {
+        saveNewTask(values);
+      } else {
+        updateTask(values);
+      }
     },
   });
+
+  useEffect(() => {
+    console.log("cambió", modalFunction);
+    if (modalFunction === "Edit") {
+      formik.setFieldValue("name", selection.name);
+      formik.setFieldValue("points", selection.points);
+      formik.setFieldValue("description", selection.description);
+      formik.setFieldValue("status", selection.status);
+      formik.setFieldValue("notes", selection.notes);
+    }
+  }, [modalFunction, selection]);
 
   const saveNewTask = (values: any) => {
     axios
@@ -91,8 +114,36 @@ const TaskModal = ({ open, setOpen, tasks, setTasks }: Props) => {
           handleClose();
         }
       })
-      .catch((error: any) => {
-        console.log(error);
+      .catch(() => {
+        setSnackbarMessage("Error. Try again!");
+        setShowSnackbar(true);
+      });
+  };
+
+  const updateTask = (values: any) => {
+    const payload = {
+      id: selection._id,
+      name: values.name,
+      points: values.points,
+      description: values.description,
+      status: values.status,
+      notes: values.notes,
+    };
+    axios
+      .post("/updateTask", payload)
+      .then((response: any) => {
+        const { message, taskList } = response.data;
+        console.log(response.data);
+        if (message === "Task updated successfully") {
+          setTasks(taskList);
+          setSnackbarMessage(message);
+          setShowSnackbar(true);
+          handleClose();
+        }
+      })
+      .catch(() => {
+        setSnackbarMessage("Error. Try again!");
+        setShowSnackbar(true);
       });
   };
 
@@ -112,7 +163,7 @@ const TaskModal = ({ open, setOpen, tasks, setTasks }: Props) => {
         <Box sx={style}>
           <Container maxWidth="sm">
             <Typography variant="h4" align="center" sx={{ mb: 4 }} gutterBottom>
-              Add New Task
+              {modalFunction === "Add" ? "Add New Task" : "Edit Task"}
             </Typography>
             <form onSubmit={formik.handleSubmit}>
               <TextField
@@ -193,7 +244,7 @@ const TaskModal = ({ open, setOpen, tasks, setTasks }: Props) => {
                 fullWidth
                 type="submit"
               >
-                Save
+                {modalFunction === "Add" ? "Save" : "Edit"}
               </Button>
             </form>
           </Container>

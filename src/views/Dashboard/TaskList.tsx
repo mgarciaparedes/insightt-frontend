@@ -52,31 +52,26 @@ interface Props {
   tasks: any;
   setTasks: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  modalFunction: string;
+  setModalFunction: React.Dispatch<React.SetStateAction<string>>;
+  selection: any;
+  setSelection: React.Dispatch<React.SetStateAction<any>>;
 }
 
-// Define el tipo de tu objeto
-interface Task {
-  _id: string;
-  name: string;
-  points: string;
-  status: string;
-  description: string;
-  notes: string;
-  __v: number;
-}
-
-const initialTask: Task = {
-  _id: "",
-  name: "",
-  points: "",
-  status: "",
-  description: "",
-  notes: "",
-  __v: 0,
-};
-
-const TaskList = ({ tasks, setTasks, loading }: Props) => {
-  const [selection, setSelection] = useState<Task>(initialTask);
+const TaskList = ({
+  tasks,
+  setTasks,
+  loading,
+  open,
+  setOpen,
+  modalFunction,
+  setModalFunction,
+  selection,
+  setSelection
+}: Props) => {
+  // const [selection, setSelection] = useState<Task>(initialTask);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -97,6 +92,11 @@ const TaskList = ({ tasks, setTasks, loading }: Props) => {
     </React.Fragment>
   );
 
+  const openModalToEditTask = () => {
+    setOpen(true);
+    setModalFunction("Edit");
+  };
+
   const deleteTask = (id: string) => {
     const payload = { id };
     axios
@@ -109,7 +109,10 @@ const TaskList = ({ tasks, setTasks, loading }: Props) => {
           setTasks(taskList);
         }
       })
-      .catch((error) => {});
+      .catch(() => {
+        setSnackbarMessage("Error. Try again!");
+        setShowSnackbar(true);
+      });
   };
 
   return (
@@ -176,7 +179,13 @@ const TaskList = ({ tasks, setTasks, loading }: Props) => {
                             />
                           </StyledTableCell>
                           <StyledTableCell align="center">
-                            <IconButton aria-label="update" size="small">
+                            <IconButton
+                              aria-label="update"
+                              size="small"
+                              onClick={() => {
+                                openModalToEditTask();
+                              }}
+                            >
                               <EditIcon sx={{ width: "15px" }} />
                             </IconButton>
                             <IconButton

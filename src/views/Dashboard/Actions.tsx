@@ -3,11 +3,11 @@ import { TextField, Button, Grid, Container, Divider } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 interface Props {
-  open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setModalFunction: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Actions = ({ open, setOpen }: Props) => {
+const Actions = ({ setOpen, setModalFunction }: Props) => {
   return (
     <>
       <Container maxWidth="xl">
@@ -27,7 +27,10 @@ const Actions = ({ open, setOpen }: Props) => {
               size="large"
               startIcon={<AddIcon />}
               fullWidth
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setOpen(true);
+                setModalFunction("Add");
+              }}
             >
               Add new task
             </Button>
